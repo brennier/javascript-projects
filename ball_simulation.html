@@ -1,0 +1,115 @@
+<html lang="en">
+  <head>
+    <style>
+        html, body {
+            margin:  0 !important;
+            padding: 0 !important;
+        }
+
+        #canvas {
+            background-color: #313438;
+        }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="1500" height="1500"></canvas>
+  </body>
+
+<script>
+
+var x_pos = 200;
+var y_pos = 200;
+var x_vel = 0;
+var y_vel = 0;
+var x_acc = 0;
+var y_acc = 0.5;
+var size  = 50;
+
+function draw(fps) {
+  const canvas = document.getElementById("canvas");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  if (canvas.getContext) {
+    const ctx = canvas.getContext("2d");
+
+    ctx.beginPath();
+    ctx.arc(x_pos, y_pos, size, 0, 2 * Math.PI);
+    ctx.fillStyle = "#28b0ff";
+    ctx.fill();
+    //ctx.strokeStyle = "rgb(65 107 223)";
+    //ctx.lineWidth = 3;
+    //ctx.stroke();
+
+    ctx.font = '32px Arial';
+    ctx.fillStyle = "red";
+    ctx.fillText("FPS: " + fps, 10, 30);
+  }
+}
+
+function resizeCanvas() {
+    const canvas = document.getElementById("canvas");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+var pressed_keys = {};
+function check_key() {
+    var speed = 5;
+
+    if (pressed_keys[38] && y_pos > size) y_pos -= speed;
+    if (pressed_keys[40] && y_pos + size < window.innerHeight) y_pos += speed;
+    if (pressed_keys[37] && x_pos > size) x_pos -= speed;
+    if (pressed_keys[39] && x_pos + size < window.innerWidth) x_pos += speed;
+    /*
+    if (pressed_keys[32] && x_pos > 0 && x_pos + size < window.innerWidth
+                         && y_pos > 0 && y_pos + size < window.innerHeight) {
+        x_pos -= 1;
+        y_pos -= 1;
+        size += 2;
+    }
+    */
+    if (pressed_keys[32]) {
+      pressed_keys[32] = false;
+      var temp = x_acc;
+      x_acc = y_acc;
+      y_acc = - temp;
+    }
+}
+
+function run_physics() {
+  x_vel += x_acc;
+  y_vel += y_acc;
+  x_pos += x_vel;
+  y_pos += y_vel;
+
+  x_vel *= .99;
+  y_vel *= .99;
+
+  if (y_pos < size) { y_pos = size; y_vel *= -1; }
+  if (y_pos + size > window.innerHeight) { y_pos = window.innerHeight - size; y_vel *= -1; }
+  if (x_pos < size) { x_pos = size; x_vel *= -1; }
+  if (x_pos + size > window.innerWidth) { x_pos = window.innerWidth - size; x_vel *= -1; }
+}
+
+let old_time_stamp;
+
+function game_loop(time_stamp) {
+    var seconds_passed = (time_stamp - old_time_stamp) / 1000;
+    old_time_stamp = time_stamp;
+    fps = Math.round(1 / seconds_passed);
+    if (fps == 59 || fps == 61) fps = 60;
+    check_key();
+
+    run_physics();
+    draw(fps);
+    window.requestAnimationFrame(game_loop);
+}
+
+game_loop();
+
+document.onkeydown = function(e) { pressed_keys[e.keyCode] = true; }
+document.onkeyup   = function(e) { pressed_keys[e.keyCode] = false; }
+
+window.onresize = resizeCanvas;
+</script>
+</html>
