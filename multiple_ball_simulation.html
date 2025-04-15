@@ -1,0 +1,148 @@
+<html lang="en">
+  <head>
+    <style>
+        html, body {
+            margin:  0 !important;
+            padding: 0 !important;
+        }
+
+        #canvas {
+            background-color: #313438;
+        }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="1500" height="1500"></canvas>
+  </body>
+
+<script>
+
+class Particle {
+    static particle_colors = ['Beige', 'DarkCyan', 'DarkOrange', 'Aqua', 'Chartreuse', 'Maroon', 'Plum', 'Salmon'];
+
+    constructor(x_pos, y_pos) {
+        this.x_pos = x_pos;
+        this.y_pos = y_pos;
+        this.x_vel = 0;
+        this.y_vel = 0;
+        this.color = Particle.particle_colors[Math.floor(Math.random() * Particle.particle_colors.length)];
+        this.size = Math.random() * 40 + 10;
+    }
+
+    draw() {
+        const ctx = canvas.getContext("2d");
+        ctx.beginPath();
+        ctx.arc(this.x_pos, this.y_pos, this.size, 0, 2 * Math.PI);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+    }
+
+    run_physics() {
+        this.x_vel += x_acc;
+        this.y_vel += y_acc;
+        this.x_pos += this.x_vel;
+        this.y_pos += this.y_vel;
+
+        this.x_vel *= .995;
+        this.y_vel *= .995;
+
+        if (this.y_pos < this.size) { this.y_pos = this.size; this.y_vel *= -1; }
+        if (this.y_pos + this.size > window.innerHeight) { this.y_pos = window.innerHeight - this.size; this.y_vel *= -1; }
+        if (this.x_pos < this.size) { this.x_pos = this.size; this.x_vel *= -1; }
+        if (this.x_pos + this.size > window.innerWidth) { this.x_pos = window.innerWidth - this.size; this.x_vel *= -1; }
+    }
+
+    check_collision(other_particle) {
+        true;
+    }
+}
+
+var num_of_particles = 1;
+var particles = {};
+particles[0] = new Particle(200, 200);
+
+var x_acc = 0;
+var y_acc = 0.5;
+const arrows = ["🡇", "🡆", "🡅", "🡄"];
+var current_arrow = 0;
+
+function draw(fps) {
+  const canvas = document.getElementById("canvas");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  if (canvas.getContext) {
+    for (var i = 0; i < num_of_particles; i++) { particles[i].draw(); }
+
+    const ctx = canvas.getContext("2d");
+    ctx.font = '32px Arial';
+    ctx.fillStyle = "red";
+    ctx.fillText("FPS: " + fps, 10, 30);
+    ctx.font = '128px Arial';
+    ctx.fillText(arrows[current_arrow], 15, 150);
+  }
+}
+
+function resizeCanvas() {
+    const canvas = document.getElementById("canvas");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+var pressed_keys = {};
+var mouse_key_clicked = {};
+function check_key() {
+    var speed = 5;
+
+    if (pressed_keys[38] && y_pos > size) y_pos -= speed;
+    if (pressed_keys[40] && y_pos + size < window.innerHeight) y_pos += speed;
+    if (pressed_keys[37] && x_pos > size) x_pos -= speed;
+    if (pressed_keys[39] && x_pos + size < window.innerWidth) x_pos += speed;
+    /*
+    if (pressed_keys[32] && x_pos > 0 && x_pos + size < window.innerWidth
+                         && y_pos > 0 && y_pos + size < window.innerHeight) {
+        x_pos -= 1;
+        y_pos -= 1;
+        size += 2;
+    }
+    */
+
+    if (mouse_key_clicked[0]) {
+        particles[num_of_particles] = new Particle(mouse_key_clicked[0][0], mouse_key_clicked[0][1]);
+        num_of_particles++;
+        mouse_key_clicked[0] = false;
+    }
+
+    if (pressed_keys[32]) {
+        pressed_keys[32] = false;
+        var temp = x_acc;
+        x_acc = y_acc;
+        y_acc = - temp;
+        current_arrow++;
+        current_arrow %= 4;
+    }
+}
+
+let old_time_stamp;
+
+function game_loop(time_stamp) {
+    var seconds_passed = (time_stamp - old_time_stamp) / 1000;
+    old_time_stamp = time_stamp;
+    fps = Math.round(1 / seconds_passed);
+    if (fps == 59 || fps == 61) fps = 60;
+    check_key();
+
+    for (var i = 0; i < num_of_particles; i++) { particles[i].run_physics(); }
+    draw(fps);
+    window.requestAnimationFrame(game_loop);
+}
+
+game_loop();
+
+document.onkeydown   = function(e) { pressed_keys[e.keyCode] = true; }
+document.onkeyup     = function(e) { pressed_keys[e.keyCode] = false; }
+document.onmousedown = function(e) { mouse_key_clicked[e.button] = [e.clientX, e.clientY]; }
+document.onmouseup   = function(e) { mouse_key_clicked[e.button] = false; }
+
+window.onresize = resizeCanvas;
+</script>
+</html>
