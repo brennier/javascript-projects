@@ -57,6 +57,7 @@ function resizeCanvas() {
 }
 
 var pressed_keys = {};
+var touching_screen = false;
 function check_key() {
     var speed = 5;
 
@@ -72,7 +73,7 @@ function check_key() {
         size += 2;
     }
     */
-    if (pressed_keys[32]) {
+    if (pressed_keys[32] || touching_screen) {
       pressed_keys[32] = false;
       var temp = x_acc;
       x_acc = y_acc;
@@ -115,6 +116,9 @@ game_loop();
 
 document.onkeydown = function(e) { pressed_keys[e.keyCode] = true; }
 document.onkeyup   = function(e) { pressed_keys[e.keyCode] = false; }
+
+document.ontouchstart = function(e) { touching_screen = true; }
+document.ontouchend = function(e) { touching_screen = false; }
 
 window.onresize = resizeCanvas;
 </script>
