@@ -24,6 +24,8 @@ var y_vel = 0;
 var x_acc = 0;
 var y_acc = 0.5;
 var size  = 50;
+const arrows = ["🡇", "🡆", "🡅", "🡄"];
+var current_arrow = 0;
 
 function draw(fps) {
   const canvas = document.getElementById("canvas");
@@ -43,6 +45,8 @@ function draw(fps) {
     ctx.font = '32px Arial';
     ctx.fillStyle = "red";
     ctx.fillText("FPS: " + fps, 10, 30);
+    ctx.font = '128px Arial';
+    ctx.fillText(arrows[current_arrow], 15, 150);
   }
 }
 
@@ -73,6 +77,8 @@ function check_key() {
       var temp = x_acc;
       x_acc = y_acc;
       y_acc = - temp;
+      current_arrow++;
+      current_arrow %= 4;
     }
 }
 
@@ -82,8 +88,8 @@ function run_physics() {
   x_pos += x_vel;
   y_pos += y_vel;
 
-  x_vel *= .99;
-  y_vel *= .99;
+  x_vel *= .995;
+  y_vel *= .995;
 
   if (y_pos < size) { y_pos = size; y_vel *= -1; }
   if (y_pos + size > window.innerHeight) { y_pos = window.innerHeight - size; y_vel *= -1; }
