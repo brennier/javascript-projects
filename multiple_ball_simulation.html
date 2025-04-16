@@ -17,14 +17,58 @@
 
 <script>
 
+class Vector {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    add(other) {
+        return new Vector(this.x + other.x, this.y + other.y);
+    }
+
+    scale(number) {
+        return new Vector(this.x * number, this.y * number);
+    }
+
+    in_bounds(min_x, min_y, max_x, max_y) {
+        return (min_x < x && x < max_x &&
+                min_y < y && y < max_y);
+    }
+
+    // rotates the vector 90 degrees counter-clockwise
+    rotate() {
+        let temp = this.x;
+        this.x = this.y;
+        this.y = - temp;
+    }
+
+    distance(other) {
+        let x = this.x - other.x;
+        let y = this.y - other.y;
+        return Math.sqrt(x * x + y * y);
+    }
+
+    length() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+
+    normalize() {
+        let length = this.length();
+        return this.scale(1.0 / length);
+    }
+
+    dot_product(other) {
+        return this.x * other.x + this.y * other.y;
+    }
+}
+
 class Particle {
     static particle_colors = ['Beige', 'DarkCyan', 'DarkOrange', 'Aqua', 'Chartreuse', 'Maroon', 'Plum', 'Salmon'];
 
     constructor(x_pos, y_pos) {
-        this.x_pos = x_pos;
-        this.y_pos = y_pos;
-        this.x_vel = 0;
-        this.y_vel = 0;
+        this.pos = new Vector(x_pos, y_pos);
+        this.vel = new Vector(0, 0);
         this.color = Particle.particle_colors[Math.floor(Math.random() * Particle.particle_colors.length)];
         this.size = Math.random() * 40 + 10;
     }
@@ -32,28 +76,26 @@ class Particle {
     draw() {
         const ctx = canvas.getContext("2d");
         ctx.beginPath();
-        ctx.arc(this.x_pos, this.y_pos, this.size, 0, 2 * Math.PI);
+        ctx.arc(this.pos.x, this.pos.y, this.size, 0, 2 * Math.PI);
         ctx.fillStyle = this.color;
         ctx.fill();
     }
 
     run_physics() {
-        this.x_vel += x_acc;
-        this.y_vel += y_acc;
-        this.x_pos += this.x_vel;
-        this.y_pos += this.y_vel;
+        this.vel = this.vel.add(acc);
+        this.pos = this.pos.add(this.vel);
 
-        this.x_vel *= .995;
-        this.y_vel *= .995;
+        this.vel = this.vel.scale(.995);
 
-        if (this.y_pos < this.size) { this.y_pos = this.size; this.y_vel *= -1; }
-        if (this.y_pos + this.size > window.innerHeight) { this.y_pos = window.innerHeight - this.size; this.y_vel *= -1; }
-        if (this.x_pos < this.size) { this.x_pos = this.size; this.x_vel *= -1; }
-        if (this.x_pos + this.size > window.innerWidth) { this.x_pos = window.innerWidth - this.size; this.x_vel *= -1; }
+        if (this.pos.y < this.size) { this.pos.y = this.size; this.vel.y *= -1; }
+        if (this.pos.y + this.size > window.innerHeight) { this.pos.y = window.innerHeight - this.size; this.vel.y *= -1; }
+        if (this.pos.x < this.size) { this.pos.x = this.size; this.vel.x *= -1; }
+        if (this.pos.x + this.size > window.innerWidth) { this.pos.x = window.innerWidth - this.size; this.vel.x *= -1; }
     }
 
-    check_collision(other_particle) {
-        true;
+    check_collision(other) {
+        return true;
+        // TODO
     }
 }
 
@@ -61,8 +103,7 @@ var num_of_particles = 1;
 var particles = {};
 particles[0] = new Particle(200, 200);
 
-var x_acc = 0;
-var y_acc = 0.5;
+var acc = new Vector(0, 0.5);
 const arrows = ["🡇", "🡆", "🡅", "🡄"];
 var current_arrow = 0;
 
@@ -114,9 +155,7 @@ function check_key() {
 
     if (pressed_keys[32]) {
         pressed_keys[32] = false;
-        var temp = x_acc;
-        x_acc = y_acc;
-        y_acc = - temp;
+        acc.rotate();
         current_arrow++;
         current_arrow %= 4;
     }
