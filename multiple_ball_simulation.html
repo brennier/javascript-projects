@@ -111,14 +111,23 @@ class Particle {
         other.pos = other.pos.add(collision_vector.scale(overlap / 2.0));
 
         // project the velocities onto the collision vector and the normal vector
-        var this_normal_velocity = normal_vector.scale(this.vel.dot_product(normal_vector));
-        var other_normal_velocity = normal_vector.scale(other.vel.dot_product(normal_vector));
-        var this_collision_velocity = this.vel.minus(this_normal_velocity);
-        var other_collision_velocity = other.vel.minus(other_normal_velocity);
+        var this_normal_velocity = this.vel.dot_product(normal_vector);
+        var other_normal_velocity = other.vel.dot_product(normal_vector);
+        var this_collision_velocity = this.vel.dot_product(collision_vector);
+        var other_collision_velocity = other.vel.dot_product(collision_vector);
 
-        // Keep the normal components the same, but swap the collision components
-        this.vel = this_normal_velocity.add(other_collision_velocity);
-        other.vel = other_normal_velocity.add(this_collision_velocity);
+        // Adjust collision velocities based on the masses of the objects (check Wikipedia on elastic collisions)
+        var this_mass = this.size * this.size;
+        var other_mass = other.size * other.size;
+
+        var this_collision_velocity_new = (this_mass - other_mass) * this_collision_velocity + 2 * other_mass * other_collision_velocity;
+        this_collision_velocity_new /= this_mass + other_mass;
+        var other_collision_velocity_new = 2 * this_mass * this_collision_velocity + (other_mass - this_mass) * other_collision_velocity;
+        other_collision_velocity_new /= this_mass + other_mass;
+
+        // Keep the normal components the same, but update the collision components
+        this.vel = this.vel.add(collision_vector.scale(this_collision_velocity_new - this_collision_velocity));
+        other.vel = other.vel.add(collision_vector.scale(other_collision_velocity_new - other_collision_velocity));
     }
 }
 
