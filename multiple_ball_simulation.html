@@ -27,6 +27,10 @@ class Vector {
         return new Vector(this.x + other.x, this.y + other.y);
     }
 
+    minus(other) {
+        return new Vector(this.x - other.x, this.y - other.y);
+    }
+
     scale(number) {
         return new Vector(this.x * number, this.y * number);
     }
@@ -93,9 +97,24 @@ class Particle {
         if (this.pos.x + this.size > window.innerWidth) { this.pos.x = window.innerWidth - this.size; this.vel.x *= -1; }
     }
 
+    // Assume that masses are equal
     check_collision(other) {
-        return true;
-        // TODO
+        let overlap = this.size + other.size - this.pos.distance(other.pos);
+        if (overlap < 0) return; // no collision
+
+        // determine the vector of collision and the vector of normality
+        let collision_vector = other.pos.minus(this.pos).normalize();
+        let normal_vector = new Vector(collision_vector.y, - collision_vector.x);
+
+        // project the velocities onto the collision vector and the normal vector
+        var this_normal_velocity = normal_vector.scale(this.vel.dot_product(normal_vector));
+        var other_normal_velocity = normal_vector.scale(other.vel.dot_product(normal_vector));
+        var this_collision_velocity = this.vel.minus(this_normal_velocity);
+        var other_collision_velocity = other.vel.minus(other_normal_velocity);
+
+        // Keep the normal components the same, but swap the collision components
+        this.vel = this_normal_velocity.add(other_collision_velocity);
+        other.vel = other_normal_velocity.add(this_collision_velocity);
     }
 }
 
@@ -171,6 +190,9 @@ function game_loop(time_stamp) {
     check_key();
 
     for (var i = 0; i < num_of_particles; i++) { particles[i].run_physics(); }
+    for (var i = 0; i < num_of_particles; i++)
+        for (var j = i + 1; j < num_of_particles; j++)
+            particles[i].check_collision(particles[j]);
     draw(fps);
     window.requestAnimationFrame(game_loop);
 }
