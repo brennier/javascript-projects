@@ -106,6 +106,10 @@ class Particle {
         let collision_vector = other.pos.minus(this.pos).normalize();
         let normal_vector = new Vector(collision_vector.y, - collision_vector.x);
 
+        // Adjust the ball positions so that they aren't overlapping
+        this.pos = this.pos.add(collision_vector.scale(- overlap / 2.0));
+        other.pos = other.pos.add(collision_vector.scale(overlap / 2.0));
+
         // project the velocities onto the collision vector and the normal vector
         var this_normal_velocity = normal_vector.scale(this.vel.dot_product(normal_vector));
         var other_normal_velocity = normal_vector.scale(other.vel.dot_product(normal_vector));
