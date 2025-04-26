@@ -8,6 +8,7 @@
 
         #canvas {
             background-color: #313438;
+            touch-action: none;
         }
     </style>
   </head>
@@ -161,6 +162,8 @@ function resizeCanvas() {
     canvas.height = window.innerHeight;
 }
 
+var screen_rotate = false;
+var screen_touched = false;
 var pressed_keys = {};
 var mouse_key_clicked = {};
 function check_key() {
@@ -185,8 +188,15 @@ function check_key() {
         mouse_key_clicked[0] = false;
     }
 
-    if (pressed_keys[32]) {
+    if (screen_touched) {
+        particles[num_of_particles] = new Particle(screen_touched[0], screen_touched[1]);
+        num_of_particles++;
+        screen_touched = false;
+    }
+
+    if (pressed_keys[32] || screen_rotate) {
         pressed_keys[32] = false;
+        screen_rotate = false;
         acc.rotate();
         current_arrow++;
         current_arrow %= 4;
@@ -216,6 +226,12 @@ document.onkeydown   = function(e) { pressed_keys[e.keyCode] = true; }
 document.onkeyup     = function(e) { pressed_keys[e.keyCode] = false; }
 document.onmousedown = function(e) { mouse_key_clicked[e.button] = [e.clientX, e.clientY]; }
 document.onmouseup   = function(e) { mouse_key_clicked[e.button] = false; }
+document.ontouchstart = function(e) {
+    if (e.touches.length == 1)
+        screen_touched = [e.touches[0].pageX, e.touches[0].pageY];
+    else
+        screen_rotate = true;
+}
 
 window.onresize = resizeCanvas;
 </script>
