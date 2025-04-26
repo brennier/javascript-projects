@@ -137,7 +137,8 @@ var particles = {};
 particles[0] = new Particle(200, 200);
 
 var acc = new Vector(0, 0.5);
-const arrows = ["🡇", "🡆", "🡅", "🡄"];
+// Arrow symbols in Unicode: down, right, up, left
+const arrows = ["\u2b9f", "\u2b9e", "\u2b9d", "\u2b9c"];
 var current_arrow = 0;
 
 function draw(fps) {
