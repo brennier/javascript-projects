@@ -86,9 +86,9 @@ class Particle {
         ctx.fill();
     }
 
-    run_physics() {
-        this.vel = this.vel.add(acc);
-        this.pos = this.pos.add(this.vel);
+    run_physics(delta_time) {
+        this.vel = this.vel.add(acc.scale(delta_time * 60));
+        this.pos = this.pos.add(this.vel.scale(delta_time * 60));
 
         this.vel = this.vel.scale(.995);
 
@@ -207,13 +207,14 @@ function check_key() {
 let old_time_stamp;
 
 function game_loop(time_stamp) {
-    var seconds_passed = (time_stamp - old_time_stamp) / 1000;
+    var delta_time = (time_stamp - old_time_stamp) / 1000;
     old_time_stamp = time_stamp;
-    fps = Math.round(1 / seconds_passed);
+    if (!delta_time) { window.requestAnimationFrame(game_loop); return; }
+    fps = Math.round(1 / delta_time);
     if (fps == 59 || fps == 61) fps = 60;
     check_key();
 
-    for (var i = 0; i < num_of_particles; i++) { particles[i].run_physics(); }
+    for (var i = 0; i < num_of_particles; i++) { particles[i].run_physics(delta_time); }
     for (var i = 0; i < num_of_particles; i++)
         for (var j = i + 1; j < num_of_particles; j++)
             particles[i].check_collision(particles[j]);
