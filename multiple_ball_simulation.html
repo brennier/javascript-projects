@@ -221,7 +221,8 @@ function game_loop(time_stamp) {
     old_time_stamp = time_stamp;
     if (!delta_time) { window.requestAnimationFrame(game_loop); return; }
     fps = Math.round(1 / delta_time);
-    if (fps == 59 || fps == 61) fps = 60;
+    if (fps % 15 == 1)  fps -= 1;
+    if (fps % 15 == 14) fps += 1;
     check_key();
 
     for (var i = 0; i < num_of_particles; i++) { particles[i].run_physics(delta_time); }
