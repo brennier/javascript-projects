@@ -137,9 +137,7 @@ var particles = {};
 particles[0] = new Particle(200, 200);
 
 var acc = new Vector(0, 0.5);
-// Arrow symbols in Unicode: down, right, up, left
-const arrows = ["\u2b9f", "\u2b9e", "\u2b9d", "\u2b9c"];
-var current_arrow = 0;
+var arrow_direction = 0;
 
 function draw(fps) {
   const canvas = document.getElementById("canvas");
@@ -151,9 +149,21 @@ function draw(fps) {
     const ctx = canvas.getContext("2d");
     ctx.font = '32px Arial';
     ctx.fillStyle = "red";
+
+    // Draw the arrow indicating the direction of gravity
+    ctx.save();
+    ctx.translate(70, 100);
+    ctx.rotate(- 3.14 / 2 * arrow_direction);
+    ctx.beginPath();
+    ctx.moveTo(-50, -50);
+    ctx.lineTo(0, -25);
+    ctx.lineTo(50, -50);
+    ctx.lineTo(0, 50);
+    ctx.lineTo(-50, -50);
+    ctx.fill();
+    ctx.restore();
+
     ctx.fillText("FPS: " + fps, 10, 30);
-    ctx.font = '128px Arial';
-    ctx.fillText(arrows[current_arrow], 15, 150);
   }
 }
 
@@ -199,8 +209,8 @@ function check_key() {
         pressed_keys[32] = false;
         screen_rotate = false;
         acc.rotate();
-        current_arrow++;
-        current_arrow %= 4;
+        arrow_direction++;
+        arrow_direction %= 4;
     }
 }
 
