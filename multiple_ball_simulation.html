@@ -48,6 +48,14 @@ class Vector {
         this.y = - temp;
     }
 
+    rotateBy(degrees) {
+        let radians = degrees * Math.PI/180;
+        let temp_x = this.x;
+        let temp_y = this.y;
+        this.x = temp_x * Math.cos(radians) - temp_y * Math.sin(radians);
+        this.y = temp_x * Math.sin(radians) + temp_y * Math.cos(radians);
+    }
+
     distance(other) {
         let x = this.x - other.x;
         let y = this.y - other.y;
@@ -163,7 +171,23 @@ function draw(fps) {
     ctx.fill();
     ctx.restore();
 
+    // Draw a button
+    ctx.beginPath();
+    ctx.lineWidth = 10;
+    ctx.roundRect(150,10,250,140, 10, true);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.strokeStyle = "black";
+    ctx.fill();
+
+    ctx.fillStyle = "red";
     ctx.fillText("FPS: " + fps, 10, 30);
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "black";
+    ctx.font = '32px Arial';
+    ctx.fillText("Click here to", 275, 60);
+    ctx.fillText("Change Gravity", 275, 100);
   }
 }
 
@@ -193,10 +217,24 @@ function check_key() {
     }
     */
 
+    if (mouse_key_clicked[0] && 150 < mouse_key_clicked[0][0] && mouse_key_clicked[0][0] < 400 && 10 < mouse_key_clicked[0][1] && mouse_key_clicked[0][1] < 150) {
+        acc.rotate();
+        arrow_direction++;
+        arrow_direction %= 4;
+        mouse_key_clicked[0] = false;
+    }
+
     if (mouse_key_clicked[0]) {
         particles[num_of_particles] = new Particle(mouse_key_clicked[0][0], mouse_key_clicked[0][1]);
         num_of_particles++;
         mouse_key_clicked[0] = false;
+    }
+
+    if (screen_touched && 150 < screen_touched[0] && screen_touched[0] < 400 && 10 < screen_touched[1] && screen_touched[1] < 150) {
+        acc.rotate();
+        arrow_direction++;
+        arrow_direction %= 4;
+        screen_touched = false;
     }
 
     if (screen_touched) {
@@ -204,6 +242,7 @@ function check_key() {
         num_of_particles++;
         screen_touched = false;
     }
+
 
     if (pressed_keys[32] || screen_rotate) {
         pressed_keys[32] = false;
