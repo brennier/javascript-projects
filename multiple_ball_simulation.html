@@ -219,6 +219,7 @@ function check_key() {
 
     if (mouse_key_clicked[0] && 150 < mouse_key_clicked[0][0] && mouse_key_clicked[0][0] < 400 && 10 < mouse_key_clicked[0][1] && mouse_key_clicked[0][1] < 150) {
         toggleFullScreen();
+        mouse_key_clicked[0] = false;
     }
 
     if (mouse_key_clicked[0]) {
@@ -229,6 +230,7 @@ function check_key() {
 
     if (screen_touched && 150 < screen_touched[0] && screen_touched[0] < 400 && 10 < screen_touched[1] && screen_touched[1] < 150) {
         toggleFullScreen();
+        screen_touched = false;
     }
 
     if (screen_touched) {
