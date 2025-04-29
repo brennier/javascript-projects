@@ -225,7 +225,7 @@ function draw(fps) {
     ctx.fillText("FPS: " + fps, 10, 30);
 }
 
-screen_clicked = false;
+var screen_clicked = false;
 var pressed_keys = {};
 function check_key() {
     if (screen_clicked) {
@@ -281,7 +281,7 @@ window.requestAnimationFrame(game_loop);
 document.onkeydown    = function(e) { pressed_keys[e.keyCode] = true; }
 document.onkeyup      = function(e) { pressed_keys[e.keyCode] = false; }
 document.onmousedown  = function(e) { screen_clicked = [e.clientX, e.clientY]; }
-document.ontouchstart = function(e) { screen_clicked = [e.touches[0].pageX, e.touches[0].pageY]; }
+document.ontouchstart = function(e) { if (e.touches.length == 1) screen_clicked = [e.touches[0].pageX, e.touches[0].pageY]; }
 window.onresize = resizeCanvas;
 
 function toggleFullscreen() {
