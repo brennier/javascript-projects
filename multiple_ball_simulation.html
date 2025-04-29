@@ -78,16 +78,18 @@ class Vector {
 
 class Particle {
     static particle_colors = ['Beige', 'DarkCyan', 'DarkOrange', 'Aqua', 'Chartreuse', 'Maroon', 'Plum', 'Salmon'];
+    static current_color = Math.floor(Math.random() * Particle.particle_colors.length);
 
     constructor(x_pos, y_pos) {
         this.pos = new Vector(x_pos, y_pos);
         this.vel = new Vector(0, 0);
-        this.color = Particle.particle_colors[Math.floor(Math.random() * Particle.particle_colors.length)];
+        this.color = Particle.particle_colors[Particle.current_color];
+        Particle.current_color++;
+        Particle.current_color %= Particle.particle_colors.length;
         this.size = Math.random() * 40 + 10;
     }
 
-    draw() {
-        const ctx = canvas.getContext("2d");
+    draw(ctx) {
         ctx.beginPath();
         ctx.arc(this.pos.x, this.pos.y, this.size, 0, 2 * Math.PI);
         ctx.fillStyle = this.color;
@@ -157,7 +159,7 @@ function draw(fps) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw the balls
-    for (var i = 0; i < num_of_particles; i++) { particles[i].draw(); }
+    for (var i = 0; i < num_of_particles; i++) { particles[i].draw(ctx); }
 
     // Draw the arrow indicating the direction of gravity
     ctx.save();
@@ -189,7 +191,7 @@ function draw(fps) {
     ctx.fillStyle = "black";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("Toggle", 250, 35);
+    ctx.fillText("Change", 250, 35);
     ctx.fillText("Gravity", 250, 75);
 
     // Draw change fullscreen button
