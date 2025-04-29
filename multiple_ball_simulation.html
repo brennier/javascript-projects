@@ -249,15 +249,14 @@ function check_key() {
     }
 }
 
-let old_time_stamp;
+let old_time_stamp = performance.now();
 
 function game_loop(time_stamp) {
     var delta_time = (time_stamp - old_time_stamp) / 1000;
     old_time_stamp = time_stamp;
-    if (!delta_time) { window.requestAnimationFrame(game_loop); return; }
-    // if delta_time is longer than a second (probably because the tab 
+    // if delta_time is longer than a second (probably because the tab
     // went to sleep and woke up) then skip rendering
-    if (delta_time > 1) { window.requestAnimationFrame(game_loop); return; } 
+    if (delta_time > 1) { window.requestAnimationFrame(game_loop); return; }
     fps = Math.round(1 / delta_time);
     if (fps % 15 == 1)  fps -= 1;
     if (fps % 15 == 14) fps += 1;
@@ -271,7 +270,7 @@ function game_loop(time_stamp) {
     window.requestAnimationFrame(game_loop);
 }
 
-game_loop();
+window.requestAnimationFrame(game_loop);
 
 document.onkeydown   = function(e) { pressed_keys[e.keyCode] = true; }
 document.onkeyup     = function(e) { pressed_keys[e.keyCode] = false; }
