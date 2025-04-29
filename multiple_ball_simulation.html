@@ -181,8 +181,7 @@ class Particle {
     }
 }
 
-var num_of_particles = 1;
-var particles = {};
+var particles = [];
 particles[0] = new Particle(200, 200);
 
 var acc = new Vector(0, 0.5);
@@ -200,7 +199,7 @@ function draw(fps) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw the balls
-    for (var i = 0; i < num_of_particles; i++) { particles[i].draw(ctx); }
+    for (var i = 0; i < particles.length; i++) { particles[i].draw(ctx); }
 
     // Draw buttons
     for (var i = 0; i < Button.instances.length; i++) Button.instances[i].draw(ctx);
@@ -238,8 +237,7 @@ function check_key() {
                 return;
             }
         }
-        particles[num_of_particles] = new Particle(pos[0], pos[1]);
-        num_of_particles++;
+        particles[particles.length] = new Particle(pos[0], pos[1]);
     }
 
     if (pressed_keys[32]) {
@@ -267,9 +265,9 @@ function game_loop(time_stamp) {
     check_key();
 
     // Update physics
-    for (var i = 0; i < num_of_particles; i++) { particles[i].run_physics(delta_time); }
-    for (var i = 0; i < num_of_particles; i++)
-        for (var j = i + 1; j < num_of_particles; j++)
+    for (var i = 0; i < particles.length; i++) { particles[i].run_physics(delta_time); }
+    for (var i = 0; i < particles.length; i++)
+        for (var j = i + 1; j < particles.length; j++)
             particles[i].check_collision(particles[j]);
 
     // Draw animations
