@@ -76,6 +76,45 @@ class Vector {
     }
 }
 
+class Button {
+    static instances = [];
+
+    constructor(x, y, width, height, text1, text2, action) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.text1 = text1;
+        this.text2 = text2;
+        this.action = action;
+        Button.instances.push(this);
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.strokeStyle = "black";
+        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.beginPath();
+        ctx.roundRect(this.x, this.y, this.width, this.height, 10, true);
+        ctx.fill();
+
+        ctx.fillStyle = "black";
+        ctx.fillText(this.text1, this.x + this.width / 2, this.y + this.height / 2 - 20);
+        ctx.fillText(this.text2, this.x + this.width / 2, this.y + this.height / 2 + 20);
+        ctx.restore();
+    }
+
+    is_clicked(x,y) {
+        return this.x < x && x < this.x + this.width && this.y < y && y < this.y + this.height;
+    }
+
+    do_action() {
+        this.action();
+    }
+}
+
 class Particle {
     static particle_colors = ['Beige', 'DarkCyan', 'DarkOrange', 'Aqua', 'Chartreuse', 'Maroon', 'Plum', 'Salmon'];
     static current_color = Math.floor(Math.random() * Particle.particle_colors.length);
@@ -148,6 +187,8 @@ particles[0] = new Particle(200, 200);
 
 var acc = new Vector(0, 0.5);
 var arrow_direction = 0;
+var change_gravity_btn = new Button(150, 10, 200, 90, "Change", "Gravity", changeGravity);
+var toggle_fullscreen_btn = new Button(360, 10, 200, 90, "Toggle", "Fullscreen", toggleFullscreen);
 
 function draw(fps) {
     // Setup canvas for drawing
@@ -160,6 +201,9 @@ function draw(fps) {
 
     // Draw the balls
     for (var i = 0; i < num_of_particles; i++) { particles[i].draw(ctx); }
+
+    // Draw buttons
+    for (var i = 0; i < Button.instances.length; i++) Button.instances[i].draw(ctx);
 
     // Draw the arrow indicating the direction of gravity
     ctx.save();
@@ -180,77 +224,26 @@ function draw(fps) {
     ctx.fillStyle = "red";
     ctx.textAlign = "left";
     ctx.fillText("FPS: " + fps, 10, 30);
-
-    // Draw change gravity button
-    ctx.beginPath();
-    ctx.lineWidth = 10;
-    ctx.roundRect(150, 10, 200, 90, 10, true);
-    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-    ctx.strokeStyle = "black";
-    ctx.fill();
-    ctx.fillStyle = "black";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("Change", 250, 35);
-    ctx.fillText("Gravity", 250, 75);
-
-    // Draw change fullscreen button
-    ctx.beginPath();
-    ctx.lineWidth = 10;
-    ctx.roundRect(360, 10, 200, 90, 10, true);
-    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-    ctx.strokeStyle = "black";
-    ctx.fill();
-    ctx.fillStyle = "black";
-    ctx.fillText("Toggle", 460, 35);
-    ctx.fillText("Fullscreen", 460, 75);
 }
 
-var screen_rotate = false;
-var screen_touched = false;
+screen_clicked = false;
 var pressed_keys = {};
-var mouse_key_clicked = {};
 function check_key() {
-    if (mouse_key_clicked[0] && 150 < mouse_key_clicked[0][0] && mouse_key_clicked[0][0] < 350 && 10 < mouse_key_clicked[0][1] && mouse_key_clicked[0][1] < 100) {
-        acc.rotate();
-        arrow_direction++;
-        arrow_direction %= 4;
-        mouse_key_clicked[0] = false;
-    }
-
-    if (mouse_key_clicked[0] && 360 < mouse_key_clicked[0][0] && mouse_key_clicked[0][0] < 560 && 10 < mouse_key_clicked[0][1] && mouse_key_clicked[0][1] < 100) {
-        toggleFullScreen();
-        mouse_key_clicked[0] = false;
-    }
-
-    if (mouse_key_clicked[0]) {
-        particles[num_of_particles] = new Particle(mouse_key_clicked[0][0], mouse_key_clicked[0][1]);
+    if (screen_clicked) {
+        let pos = screen_clicked;
+        screen_clicked = false;
+        for (var i = 0; i < Button.instances.length; i++) {
+            if (Button.instances[i].is_clicked(pos[0], pos[1])) {
+                Button.instances[i].do_action();
+                return;
+            }
+        }
+        particles[num_of_particles] = new Particle(pos[0], pos[1]);
         num_of_particles++;
-        mouse_key_clicked[0] = false;
-    }
-
-    if (screen_touched && 150 < screen_touched[0] && screen_touched[0] < 350 && 10 < screen_touched[1] && screen_touched[1] < 100) {
-        acc.rotate();
-        arrow_direction++;
-        arrow_direction %= 4;
-        screen_touched = false;
-    }
-
-    if (screen_touched && 360 < screen_touched[0] && screen_touched[0] < 560 && 10 < screen_touched[1] && screen_touched[1] < 100) {
-        toggleFullScreen();
-        screen_touched = false;
-    }
-
-    if (screen_touched) {
-        particles[num_of_particles] = new Particle(screen_touched[0], screen_touched[1]);
-        num_of_particles++;
-        screen_touched = false;
     }
 
     if (pressed_keys[32]) {
-        acc.rotate();
-        arrow_direction++;
-        arrow_direction %= 4;
+        changeGravity();
         pressed_keys[32] = false;
     }
 }
@@ -289,16 +282,21 @@ window.requestAnimationFrame(game_loop);
 
 document.onkeydown    = function(e) { pressed_keys[e.keyCode] = true; }
 document.onkeyup      = function(e) { pressed_keys[e.keyCode] = false; }
-document.onmousedown  = function(e) { mouse_key_clicked[e.button] = [e.clientX, e.clientY]; }
-document.onmouseup    = function(e) { mouse_key_clicked[e.button] = false; }
-document.ontouchstart = function(e) { screen_touched = [e.touches[0].pageX, e.touches[0].pageY]; }
+document.onmousedown  = function(e) { screen_clicked = [e.clientX, e.clientY]; }
+document.ontouchstart = function(e) { screen_clicked = [e.touches[0].pageX, e.touches[0].pageY]; }
 window.onresize = resizeCanvas;
 
-function toggleFullScreen() {
+function toggleFullscreen() {
     if (document.fullscreenElement)
         document.exitFullscreen();
     else
         document.body.requestFullscreen();
+}
+
+function changeGravity() {
+    acc.rotate();
+    arrow_direction++;
+    arrow_direction %= 4;
 }
 
 function resizeCanvas() {
