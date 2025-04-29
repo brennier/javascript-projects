@@ -148,18 +148,20 @@ var acc = new Vector(0, 0.5);
 var arrow_direction = 0;
 
 function draw(fps) {
-  const canvas = document.getElementById("canvas");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  if (canvas.getContext) {
-    for (var i = 0; i < num_of_particles; i++) { particles[i].draw(); }
-
+    // Setup canvas for drawing
+    const canvas = document.getElementById("canvas");
+    if (!canvas.getContext) return;
     const ctx = canvas.getContext("2d");
-    ctx.font = '32px Arial';
-    ctx.fillStyle = "red";
+
+    // Clear the screen
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the balls
+    for (var i = 0; i < num_of_particles; i++) { particles[i].draw(); }
 
     // Draw the arrow indicating the direction of gravity
     ctx.save();
+    ctx.fillStyle = "red";
     ctx.translate(70, 100);
     ctx.rotate(- 3.14 / 2 * arrow_direction);
     ctx.beginPath();
@@ -171,7 +173,10 @@ function draw(fps) {
     ctx.fill();
     ctx.restore();
 
+    // Draw FPS
+    ctx.font = '32px Arial';
     ctx.fillStyle = "red";
+    ctx.textAlign = "left";
     ctx.fillText("FPS: " + fps, 10, 30);
 
     // Draw change gravity button
@@ -197,7 +202,6 @@ function draw(fps) {
     ctx.fillStyle = "black";
     ctx.fillText("Toggle", 460, 35);
     ctx.fillText("Fullscreen", 460, 75);
-  }
 }
 
 var screen_rotate = false;
@@ -278,6 +282,7 @@ function game_loop(time_stamp) {
     window.requestAnimationFrame(game_loop);
 }
 
+resizeCanvas();
 window.requestAnimationFrame(game_loop);
 
 document.onkeydown    = function(e) { pressed_keys[e.keyCode] = true; }
