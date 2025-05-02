@@ -245,6 +245,7 @@ function check_key() {
         for (var i = 0; i < Button.instances.length; i++) {
             if (Button.instances[i].is_clicked(pos[0], pos[1])) {
                 Button.instances[i].do_action();
+                last_input = performance.now();
                 return;
             }
         }
