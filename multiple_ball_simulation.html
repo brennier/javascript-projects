@@ -193,6 +193,7 @@ var acc = new Vector(0, 0.5);
 var arrow_direction = 0;
 var change_gravity_btn = new Button(150, 10, 200, 90, "Change", "Gravity", changeGravity);
 var toggle_fullscreen_btn = new Button(360, 10, 200, 90, "Toggle", "Fullscreen", toggleFullscreen);
+var clear_balls_btn = new Button(570, 10, 200, 90, "Clear", "Balls", clearBalls);
 
 function draw(fps) {
     // Setup canvas for drawing
@@ -302,7 +303,7 @@ function game_loop(time_stamp) {
 
     // Check for user inputs
     check_key();
-    if (creating_particle) {
+    if (creating_particle && creating_particle.size < 150) {
         creating_particle.size += 20 * delta_time;
     }
 
@@ -353,6 +354,10 @@ function resizeCanvas() {
     const canvas = document.getElementById("canvas");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+}
+
+function clearBalls() {
+    particles = [];
 }
 
 </script>
