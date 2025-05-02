@@ -126,6 +126,7 @@ class Particle {
         Particle.current_color++;
         Particle.current_color %= Particle.particle_colors.length;
         this.size = Math.random() * 40 + 10;
+        this.is_being_dragged = false;
     }
 
     draw(ctx) {
@@ -136,6 +137,8 @@ class Particle {
     }
 
     run_physics(delta_time) {
+        if (this.is_being_dragged) return;
+
         this.vel = this.vel.add(acc.scale(delta_time * 60));
         this.pos = this.pos.add(this.vel.scale(delta_time * 60));
 
@@ -227,6 +230,8 @@ function draw(fps) {
 
 var screen_clicked = false;
 var pressed_keys = {};
+var dragging_particle = false;
+var creating_particle = false;
 var last_input = performance.now();
 function check_key() {
     if (!screen_clicked && !pressed_keys[32]) return;
@@ -240,16 +245,35 @@ function check_key() {
     }
 
     if (screen_clicked) {
-        let pos = screen_clicked;
-        screen_clicked = false;
+        // Was a button clicked?
         for (var i = 0; i < Button.instances.length; i++) {
-            if (Button.instances[i].is_clicked(pos[0], pos[1])) {
+            if (Button.instances[i].is_clicked(screen_clicked.x, screen_clicked.y)) {
                 Button.instances[i].do_action();
                 last_input = performance.now();
+                screen_clicked = false;
                 return;
             }
         }
-        particles[particles.length] = new Particle(pos[0], pos[1]);
+
+        // Was a particle clicked?
+        for (var i = 0; i < particles.length; i++) {
+            if (particles[i].pos.distance(screen_clicked) < particles[i].size) {
+                particles[i].pos = screen_clicked;
+                particles[i].vel = new Vector(0,0);
+                particles[i].is_being_dragged = true;
+                dragging_particle = particles[i];
+                screen_clicked = false;
+                return;
+            }
+        }
+
+        // Create a new particle
+        new_particle = new Particle(screen_clicked.x, screen_clicked.y);
+        particles[particles.length] = new_particle;
+        new_particle.size = 10;
+        creating_particle = new_particle;
+        dragging_particle = new_particle;
+        new_particle.is_being_dragged = true;
     }
 
     if (pressed_keys[32]) {
@@ -276,6 +300,9 @@ function game_loop(time_stamp) {
 
     // Check for user inputs
     check_key();
+    if (creating_particle) {
+        creating_particle.size += 20 * delta_time;
+    }
 
     // Update physics
     for (var i = 0; i < particles.length; i++) { particles[i].run_physics(delta_time); }
@@ -293,8 +320,18 @@ window.requestAnimationFrame(game_loop);
 
 document.onkeydown    = function(e) { pressed_keys[e.keyCode] = true; }
 document.onkeyup      = function(e) { pressed_keys[e.keyCode] = false; }
-document.onmousedown  = function(e) { screen_clicked = [e.clientX, e.clientY]; }
-document.ontouchstart = function(e) { if (e.touches.length == 1) screen_clicked = [e.touches[0].pageX, e.touches[0].pageY]; }
+document.onmousedown  = function(e) { screen_clicked = new Vector(e.clientX, e.clientY); }
+document.onmouseup    = function(e) {
+    if (creating_particle) { creating_particle.is_being_dragged = false; creating_particle = false; }
+    if (dragging_particle) { dragging_particle.is_being_dragged = false; dragging_particle = false; }
+}
+document.onmousemove  = function(e) { if (dragging_particle) dragging_particle.pos = new Vector(e.clientX, e.clientY); }
+document.ontouchstart = function(e) { if (e.touches.length == 1) screen_clicked = new Vector(e.touches[0].pageX, e.touches[0].pageY); }
+document.ontouchmove  = function(e) { if (dragging_particle) dragging_particle.pos = new Vector(e.touches[0].pageX, e.touches[0].pageY); }
+document.ontouchend   = function(e) {
+    if (creating_particle) { creating_particle.is_being_dragged = false; creating_particle = false; }
+    if (dragging_particle) { dragging_particle.is_being_dragged = false; dragging_particle = false; }
+}
 window.onresize = resizeCanvas;
 
 function toggleFullscreen() {
