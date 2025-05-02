@@ -227,7 +227,18 @@ function draw(fps) {
 
 var screen_clicked = false;
 var pressed_keys = {};
+var last_input = performance.now();
 function check_key() {
+    if (!screen_clicked && !pressed_keys[32]) return;
+
+    // If the time since last input was less than .2 seconds, ignore it
+    var time_now = performance.now();
+    if (time_now - last_input < 200) {
+        screen_clicked = false;
+        pressed_keys[32] = false;
+        return;
+    }
+
     if (screen_clicked) {
         let pos = screen_clicked;
         screen_clicked = false;
@@ -244,6 +255,7 @@ function check_key() {
         changeGravity();
         pressed_keys[32] = false;
     }
+    last_input = performance.now();
 }
 
 let old_time_stamp = performance.now();
